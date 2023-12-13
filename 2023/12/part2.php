@@ -1,7 +1,5 @@
 <?php
 
-$lines = file('input.txt', FILE_IGNORE_NEW_LINES);
-
 function calculate_possibilities(array &$cache, string $springs, array $damagedSprings, int $groupStart)
 {
     $key = sprintf('s:%s_g:%s', $springs, $groupStart);
@@ -9,11 +7,7 @@ function calculate_possibilities(array &$cache, string $springs, array $damagedS
         return $cache[$key];
     }
     if (empty($damagedSprings[$groupStart])) {
-        if (str_contains($springs, '#')) {
-            return $cache[$key] = 0;
-        } else {
-            return $cache[$key] = 1;
-        }
+        return $cache[$key] = (int) !str_contains($springs, '#');
     }
     if (empty($springs)) {
         return $cache[$key] = 0;
@@ -44,6 +38,7 @@ function calculate_possibilities(array &$cache, string $springs, array $damagedS
     return $cache[$key] = 0;
 }
 
+$lines = file('input.txt', FILE_IGNORE_NEW_LINES);
 $total = 0;
 foreach ($lines as $line) {
     $cache = [];

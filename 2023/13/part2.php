@@ -2,11 +2,7 @@
 
 function try_fix_mirror(string $leftEntry, string $rightEntry): bool
 {
-    $diff = array_diff_assoc(str_split($leftEntry), str_split($rightEntry));
-    if (count($diff) === 1) {
-        return true;
-    }
-    return false;
+    return count(array_diff_assoc(str_split($leftEntry), str_split($rightEntry))) === 1;
 }
 
 function find_reflection(array $entries): int

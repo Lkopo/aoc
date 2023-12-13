@@ -1,15 +1,9 @@
 <?php
 
-$lines = file('input.txt', FILE_IGNORE_NEW_LINES);
-
 function calculate_possibilities(string $springs, array $damagedSprings, int $groupStart)
 {
     if (empty($damagedSprings[$groupStart])) {
-        if (str_contains($springs, '#')) {
-            return 0;
-        } else {
-            return 1;
-        }
+        return (int) !str_contains($springs, '#');
     }
     if (empty($springs)) {
         return 0;
@@ -40,6 +34,7 @@ function calculate_possibilities(string $springs, array $damagedSprings, int $gr
     return 0;
 }
 
+$lines = file('input.txt', FILE_IGNORE_NEW_LINES);
 $total = 0;
 foreach ($lines as $line) {
     list($springs, $damagedSprings) = explode(' ', $line);
