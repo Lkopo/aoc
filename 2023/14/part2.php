@@ -1,102 +1,51 @@
 <?php
 
-enum Direction: int
+function move_rocks(array $map, int $size): array
 {
-    case UP = 1;
-    case DOWN = 2;
-    case LEFT = 3;
-    case RIGHT = 4;
-}
-
-function move_rocks(array &$map, int $size, Direction $direction): void
-{
-    if ($direction !== Direction::DOWN) {
-        for ($x = 0; $x < $size; ++$x) {
-            if ($direction === Direction::RIGHT) {
-                for ($y = $size - 1; $y >= 0; --$y) {
-                    if ($map[$x][$y] === '#' || $map[$x][$y] === 'O') {
-                        continue;
-                    }
-                    for ($i = $y - 1; $i >= 0 && $map[$x][$i] !== '#'; --$i) {
-                        if ($map[$x][$i] === '.') {
-                            continue;
-                        }
-                        $map[$x][$y] = 'O';
-                        $map[$x][$i] = '.';
-                        break;
-                    }
-                }
-            } else {
-                for ($y = 0; $y < $size; ++$y) {
-                    if ($map[$x][$y] === '#' || $map[$x][$y] === 'O') {
-                        continue;
-                    }
-                    if ($direction === Direction::LEFT) {
-                        for ($i = $y + 1; $i < $size && $map[$x][$i] !== '#'; ++$i) {
-                            if ($map[$x][$i] === '.') {
-                                continue;
-                            }
-                            $map[$x][$y] = 'O';
-                            $map[$x][$i] = '.';
-                            break;
-                        }
-                    } else {
-                        for ($i = $x + 1; $i < $size && $map[$i][$y] !== '#'; ++$i) {
-                            if ($map[$i][$y] === '.') {
-                                continue;
-                            }
-                            $map[$x][$y] = 'O';
-                            $map[$i][$y] = '.';
-                            break;
-                        }
-                    }
-                }
+    for ($x = 0; $x < $size; ++$x) {
+        for ($y = 0; $y < $size; ++$y) {
+            if ($map[$x][$y] === '#' || $map[$x][$y] === 'O') {
+                continue;
             }
-        }
-    } else {
-        for ($x = $size - 1; $x >= 0; --$x) {
-            for ($y = 0; $y < $size; ++$y) {
-                if ($map[$x][$y] === '#' || $map[$x][$y] === 'O') {
+            for ($i = $x + 1; $i < $size && $map[$i][$y] !== '#'; ++$i) {
+                if ($map[$i][$y] === '.') {
                     continue;
                 }
-                for ($i = $x - 1; $i >= 0 && $map[$i][$y] !== '#'; --$i) {
-                    if ($map[$i][$y] === '.') {
-                        continue;
-                    }
-                    $map[$x][$y] = 'O';
-                    $map[$i][$y] = '.';
-                    break;
-                }
+                $map[$x][$y] = 'O';
+                $map[$i][$y] = '.';
+                break;
             }
         }
     }
+    return $map;
+}
+
+function rotate_map(array $map): array
+{
+    return array_map('array_reverse', array_map(null, ...$map));
 }
 
 $lines = file('input.txt', FILE_IGNORE_NEW_LINES);
-$map = [];
-foreach ($lines as $line) {
-    $map[] = str_split($line);
-}
+$map = array_map(fn(string $line) => str_split($line), $lines);
 $size = count($map);
-$total = 0;
 $cache = [];
 $cycles = 1000000000;
 for ($i = 0; $i < $cycles; ++$i) {
     $key = sha1(json_encode($map));
     if (isset($cache[$key])) {
         $cache = array_slice($cache, array_search($key, array_keys($cache)));
-        $newKey = array_keys($cache)[($cycles - $i - 1) % count($cache)];
-        $map = json_decode($cache[$newKey]);
+        $map = json_decode($cache[array_keys($cache)[($cycles - $i - 1) % count($cache)]]);
         break;
     }
-    move_rocks($map, $size, Direction::UP);
-    move_rocks($map, $size, Direction::LEFT);
-    move_rocks($map, $size, Direction::DOWN);
-    move_rocks($map, $size, Direction::RIGHT);
-    $json = json_encode($map);
-    $cache[$key] = $json;
+    $map = move_rocks($map, $size);
+    $map = move_rocks(rotate_map($map), $size);
+    $map = move_rocks(rotate_map($map), $size);
+    $map = move_rocks(rotate_map($map), $size);
+    $map = rotate_map($map);
+    $cache[$key] = json_encode($map);
 }
 
+$total = 0;
 foreach ($map as $x => $row) {
     foreach ($row as $item) {
         if ($item === 'O') {
