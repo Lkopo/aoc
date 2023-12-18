@@ -47,7 +47,7 @@ enum Direction: int
     }
 }
 
-$lines = file('input_test.txt', FILE_IGNORE_NEW_LINES);
+$lines = file('input.txt', FILE_IGNORE_NEW_LINES);
 $map = array_map(fn(string $line) => array_map(fn(string $char) => (int) $char, str_split($line)), $lines);
 $queue = new PriorityQueue();
 $queue->addWithPriority('0:0:2:0', 0);
