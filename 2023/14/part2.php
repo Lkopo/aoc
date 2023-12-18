@@ -34,7 +34,7 @@ for ($i = 0; $i < $cycles; ++$i) {
     $key = sha1(json_encode($map));
     if (isset($cache[$key])) {
         $cache = array_slice($cache, array_search($key, array_keys($cache)));
-        $map = json_decode($cache[array_keys($cache)[($cycles - $i - 1) % count($cache)]]);
+        $map = $cache[array_keys($cache)[($cycles - $i - 1) % count($cache)]];
         break;
     }
     $map = move_rocks($map, $size);
@@ -42,7 +42,7 @@ for ($i = 0; $i < $cycles; ++$i) {
     $map = move_rocks(rotate_map($map), $size);
     $map = move_rocks(rotate_map($map), $size);
     $map = rotate_map($map);
-    $cache[$key] = json_encode($map);
+    $cache[$key] = $map;
 }
 
 $total = 0;
