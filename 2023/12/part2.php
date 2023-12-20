@@ -1,6 +1,6 @@
 <?php
 
-function calculate_possibilities(array &$cache, string $springs, array $damagedSprings, int $groupStart)
+function calculate_possibilities(array &$cache, string $springs, array $damagedSprings, int $groupStart): int
 {
     $key = sprintf('s:%s_g:%s', $springs, $groupStart);
     if (isset($cache[$key])) {
@@ -23,7 +23,7 @@ function calculate_possibilities(array &$cache, string $springs, array $damagedS
             return $cache[$key] = 0;
         }
         if (strlen($springs) === $group) {
-            return $cache[$key] = $groupStart === count($damagedSprings) - 1 ? 1 : 0;
+            return (int) ($cache[$key] = $groupStart === count($damagedSprings) - 1);
         }
         $nextCharacter = $springs[$group] ?? null;
         if (!in_array($nextCharacter, ['.', '?'])) {

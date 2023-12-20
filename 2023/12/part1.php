@@ -1,6 +1,6 @@
 <?php
 
-function calculate_possibilities(string $springs, array $damagedSprings, int $groupStart)
+function calculate_possibilities(string $springs, array $damagedSprings, int $groupStart): int
 {
     if (empty($damagedSprings[$groupStart])) {
         return (int) !str_contains($springs, '#');
@@ -19,7 +19,7 @@ function calculate_possibilities(string $springs, array $damagedSprings, int $gr
             return 0;
         }
         if (strlen($springs) === $group) {
-            return $groupStart === count($damagedSprings) - 1 ? 1 : 0;
+            return (int) ($groupStart === count($damagedSprings) - 1);
         }
         $nextCharacter = $springs[$group] ?? null;
         if (!in_array($nextCharacter, ['.', '?'])) {
