@@ -41,7 +41,7 @@ for ($i = 0; $i < 1000; ++$i) {
                 continue;
             }
             if ($modules[$target]['type'] === '%') {
-                if ($pulse === 1) {
+                if ($pulse) {
                     continue;
                 }
                 $currentStatus = $modules[$target]['configuration'] ?? false;

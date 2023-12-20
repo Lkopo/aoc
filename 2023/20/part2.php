@@ -28,34 +28,30 @@ foreach (array_filter($modules, fn(array $module) => $module['type'] === '&') as
 $queue = new SplQueue();
 $finalSource = key(array_filter($modules, fn(array $m) => in_array('rx', $m['targets'])));
 $finalSourcePressesPerSource = [...$modules[$finalSource]['configuration']];
-foreach ($modules['broadcaster']['targets'] as $broadcastTarget) {
-    $cache = [];
-    $presses = 0;
-    $finalSourceSource = null;
-    $newKey = sha1(json_encode($modules));
-    do {
-        ++$presses;
-        $key = $newKey;
-        $cache[$key] = 1;
-        $queue->enqueue([0, $broadcastTarget, 'broadcaster']);
-        while (!$queue->isEmpty()) {
-            [$pulse, $target, $source] = $queue->dequeue();
+$presses = 0;
+do {
+    ++$presses;
+    $queue->enqueue([0, 'broadcaster', null]);
+    while (!$queue->isEmpty()) {
+        [$pulse, $target, $source] = $queue->dequeue();
+        if ($target === 'broadcaster') {
+            foreach ($modules[$target]['targets'] as $nextTarget) {
+                $queue->enqueue([$pulse, $nextTarget, $target]);
+            }
+        } else {
             if (!isset($modules[$target])) {
                 continue;
             }
             if ($modules[$target]['type'] === '%') {
-                if ($pulse === 1) {
+                if ($pulse) {
                     continue;
                 }
                 $currentStatus = $modules[$target]['configuration'] ?? false;
                 $modules[$target]['configuration'] = !$currentStatus;
                 $nextPulse = (int) !$currentStatus;
             } else {
-                if ($target === $finalSource) {
-                    $finalSourceSource = $source;
-                    if ($pulse === 1) {
-                        $finalSourcePressesPerSource[$source] = $presses;
-                    }
+                if ($target === $finalSource && $pulse) {
+                    $finalSourcePressesPerSource[$source] = $presses;
                 }
                 $modules[$target]['configuration'][$source] = $pulse;
                 $nextPulse = (int) (array_unique(array_values($modules[$target]['configuration'])) !== [1]);
@@ -64,17 +60,7 @@ foreach ($modules['broadcaster']['targets'] as $broadcastTarget) {
                 $queue->enqueue([$nextPulse, $nextTarget, $target]);
             }
         }
-        $newKey = sha1(json_encode($modules));
-    } while (!isset($cache[$newKey]));
-    $finalSourcePressesPerSource[$finalSourceSource] = gmp_lcm(
-        $finalSourcePressesPerSource[$finalSourceSource],
-        $presses - (array_flip(array_keys($cache))[$newKey])
-    );
-}
+    }
+} while (!min($finalSourcePressesPerSource));
 
-$lcm = 1;
-foreach ($finalSourcePressesPerSource as $presses) {
-    $lcm = gmp_lcm($lcm, $presses);
-}
-
-var_dump($lcm);
+var_dump(array_reduce($finalSourcePressesPerSource, fn(mixed $total, mixed $presses) => gmp_lcm($total, $presses), 1));
