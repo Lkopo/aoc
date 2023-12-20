@@ -13,7 +13,6 @@ $currentNodes = array_filter(array_keys($map), fn(string $key) => str_ends_with(
 $nodeSteps = [];
 foreach ($currentNodes as $currentNode) {
     $steps = 0;
-    var_dump($currentNode);
     while (!str_ends_with($currentNode, 'Z')) {
         $command = $commands[0];
         array_shift($commands);
@@ -23,11 +22,5 @@ foreach ($currentNodes as $currentNode) {
     }
     $nodeSteps[] = $steps;
 }
-while (count($nodeSteps) !== 1) {
-    $lcm = gmp_lcm(reset($nodeSteps), end($nodeSteps));
-    array_shift($nodeSteps);
-    array_pop($nodeSteps);
-    $nodeSteps[] = $lcm;
-}
 
-var_dump($nodeSteps);
+var_dump(array_reduce($nodeSteps, fn(mixed $total, mixed $steps) => gmp_lcm($total, $steps), 1));

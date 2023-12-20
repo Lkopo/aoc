@@ -8,8 +8,6 @@ $startKey = array_search('S', $flat);
 $endKey = array_search('E', $flat);
 $start = [(int) ($startKey / count($map[0])), $startKey % count($map[0])];
 $end = [(int) ($endKey / count($map[0])), $endKey % count($map[0])];
-var_dump($start);
-var_dump($end);
 $map[$start[0]][$start[1]] = 'a';
 $map[$end[0]][$end[1]] = 'z';
 $queue = new SplMinHeap();
