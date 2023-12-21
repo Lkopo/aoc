@@ -1,15 +1,13 @@
 <?php
 
+// hardcoded values used as this solution works only with real input (contains horizontal & vertical line from start)
 $lines = file('input.txt', FILE_IGNORE_NEW_LINES);
 $map = array_map(fn(string $line) => str_split($line), $lines);
 $directions = [[0, -1], [-1, 0], [0, 1], [1, 0]];
-$startKey = array_search('S', array_merge(...$map));
-$start = [(int) ($startKey / count($map[0])), $startKey % count($map[0])];
-$neighbors[$start[0]][$start[1]] = 1;
-$steps = 0;
-$size = count($map);
+$start = [65, 65];
+$neighbors[65][65] = 1;
+$steps = $lengthsCount = 0;
 $gridBoundNeighborLen = [];
-$lengthsCount = 0;
 $maxSteps = 26501365;
 do {
     ++$steps;
@@ -24,32 +22,28 @@ do {
         [$x, $y] = $queue->dequeue();
         foreach ($directions as $direction) {
             [$newX, $newY] = [$x + $direction[0], $y + $direction[1]];
-            $augmentedX = $newX >= 0 ? $newX % $size : ($size + $newX % $size) % $size;
-            $augmentedY = $newY >= 0 ? $newY % $size : ($size + $newY % $size) % $size;
+            $augmentedX = $newX >= 0 ? $newX % 131 : (131 + $newX % 131) % 131;
+            $augmentedY = $newY >= 0 ? $newY % 131 : (131 + $newY % 131) % 131;
             if ($map[$augmentedX][$augmentedY] !== '#') {
                 $neighbors[$newX][$newY] = 1;
             }
         }
     }
-    if ($steps % $size === 65) {
-        $gridBoundNeighborLen[$lengthsCount++] =
-            [
-                'x' => $steps,
-                'y' => count(array_merge(...$neighbors))
-            ];
+    if ($steps % 131 === 65) {
+        $gridBoundNeighborLen[$lengthsCount++] = count(array_merge(...$neighbors));
     }
 } while ($steps < $maxSteps && $lengthsCount < 3);
 
-// https://www.pw.live/exams/school/quadratic-interpolation-formula/
-$x = $maxSteps;
-$x0 = $gridBoundNeighborLen[0]['x'];
-$x1 = $gridBoundNeighborLen[1]['x'];
-$x2 = $gridBoundNeighborLen[2]['x'];
-$y0 = $gridBoundNeighborLen[0]['y'];
-$y1 = $gridBoundNeighborLen[1]['y'];
-$y2 = $gridBoundNeighborLen[2]['y'];
-$l0 = ($x - $x1) * ($x - $x2) / (($x0 - $x1) * ($x0 - $x2));
-$l1 = ($x - $x0) * ($x - $x2) / (($x1 - $x0) * ($x1 - $x2));
-$l2 = ($x - $x0) * ($x - $x1) / (($x2 - $x0) * ($x2 - $x1));
+// P(x) = ax^2 + bx + c, we know P(0), P(1) & P(2)
+// c = P(0)
+// b = P(1) - a - P(0)
+// a = (P(2) - 2(P1) + P(0)) / 2
+// x = if we got P(n) for every $steps % 131 == 65, this means we got neighbors last step before crossing first square,
+//     second square & third square;
+//     start pos is 65, and it takes 131 steps to the start position of another square;
+//     we need to set X as number of all squares we cross, so ($maxSteps - 65) / 131 = 202 300 squares
+$x = ($maxSteps - 65) / 131;
+$a = ($gridBoundNeighborLen[2] - 2 * $gridBoundNeighborLen[1] + $gridBoundNeighborLen[0]) / 2;
+$b = $gridBoundNeighborLen[1] - $a - $gridBoundNeighborLen[0];
 
-var_dump($y0 * $l0 + $y1 * $l1 + $y2 * $l2);
+var_dump($a * $x ** 2 + $b * $x + $gridBoundNeighborLen[0]);
