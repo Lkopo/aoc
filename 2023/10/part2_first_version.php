@@ -88,17 +88,44 @@ $currentPipe = $transformedStart;
 $currentX = $startX;
 $currentY = $startY;
 $direction = current($traverseMap[$transformedStart]);
-$boundary = $area = 0;
+$mainPipe = [];
 while ($currentPipe !== 'S') {
     $directions = $traverseMap[$currentPipe];
     unset($directions[array_search(Direction::getReverseDirection($direction), $directions)]);
     $direction = reset($directions);
-    [$x, $y] = Direction::getCoordinateAdditions($direction);
-    ++$boundary;
-    $area += (2 * $currentY + $y) * -$x;
+    list($x, $y) = Direction::getCoordinateAdditions($direction);
     $currentX += $x;
     $currentY += $y;
     $currentPipe = $map[$currentX][$currentY];
+    $mainPipe[$currentX][$currentY] = 1;
 }
 
-var_dump(($area - $boundary + 2) / 2);
+$map[$currentX][$currentY] = $transformedStart;
+$total = 0;
+foreach ($map as $x => $row) {
+    $inside = false;
+    $startPipe = null;
+    foreach ($row as $y => $cell) {
+        if (isset($mainPipe[$x][$y])) {
+            if ($cell === '-') {
+                continue;
+            }
+            if ($cell === '|') {
+                $inside = !$inside;
+                continue;
+            }
+            if (in_array($cell, ['L', 'F'])) {
+                $startPipe = $cell;
+                continue;
+            }
+            if (($startPipe === 'L' && $cell === '7') || ($startPipe === 'F' && $cell === 'J')) {
+                $inside = !$inside;
+            }
+            $startPipe = null;
+        } elseif ($inside) {
+            ++$total;
+        }
+    }
+}
+
+var_dump($total);
