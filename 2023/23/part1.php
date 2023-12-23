@@ -12,11 +12,10 @@ $forcedDirections = [
 $size = count($map);
 $start = [0, array_search('.', $map[0])];
 $end = [$size - 1, array_search('.', $map[$size - 1])];
-$queue = new SplPriorityQueue();
-$queue->insert([0, $start, []], 0);
+$queue = [[0, $start, []]];
 $maxDist = 0;
-while (!$queue->isEmpty()) {
-    [$dist, [$x, $y], $visited] = $queue->extract();
+while (!empty($queue)) {
+    [$dist, [$x, $y], $visited] = array_pop($queue);
     $visited[$x][$y] = 1;
     if ($x === $end[0] && $y === $end[1]) {
         $maxDist = max($maxDist, $dist);
@@ -25,13 +24,13 @@ while (!$queue->isEmpty()) {
     if (isset($forcedDirections[$map[$x][$y]])) {
         $newCoords = [$x + $forcedDirections[$map[$x][$y]][0], $y + $forcedDirections[$map[$x][$y]][1]];
         if (!isset($visited[$newCoords[0]][$newCoords[1]])) {
-            $queue->insert([$dist + 1, $newCoords, $visited], $dist + 1);
+            $queue[] = [$dist + 1, $newCoords, $visited];
         }
     } else {
         foreach ($directions as $direction) {
             [$newX, $newY] = [$x + $direction[0], $y + $direction[1]];
             if (isset($map[$newX][$newY]) && $map[$newX][$newY] !== '#' && !isset($visited[$newX][$newY])) {
-                $queue->insert([$dist + 1, [$newX, $newY], $visited], $dist + 1);
+                $queue[] = [$dist + 1, [$newX, $newY], $visited];
             }
         }
     }

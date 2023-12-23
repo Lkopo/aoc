@@ -7,10 +7,9 @@ $size = count($map);
 $start = [0, array_search('.', $map[1])];
 $end = [$size - 1, array_search('.', $map[$size - 1])];
 $nodes = [];
-$queue = new SplQueue();
-$queue->enqueue([0, $start, $start, $directions[3], $directions[3]]);
-while (!$queue->isEmpty()) {
-    [$dist, [$sx, $sy], [$x, $y], [$dx, $dy]] = $queue->dequeue();
+$queue = [[0, $start, $start, $directions[3], $directions[3]]];
+while (!empty($queue)) {
+    [$dist, [$sx, $sy], [$x, $y], [$dx, $dy]] = array_pop($queue);
     if (($x === $end[0] && $y === $end[1]) || isset($nodes["$x:$y"])) {
         $nodes["$sx:$sy"]["$x:$y"] = $dist;
         $nodes["$x:$y"]["$sx:$sy"] = $dist;
@@ -30,18 +29,17 @@ while (!$queue->isEmpty()) {
         $nodes["$sx:$sy"]["$x:$y"] = $dist;
         $nodes["$x:$y"]["$sx:$sy"] = $dist;
         foreach ($possibleDirections as $possibleDirection) {
-            $queue->enqueue([1, [$x, $y], $possibleDirection[0], $possibleDirection[1]]);
+            $queue[] = ([1, [$x, $y], $possibleDirection[0], $possibleDirection[1]]);
         }
     } elseif (!empty($possibleDirections)) {
-        $queue->enqueue([$dist + 1, [$sx, $sy], $possibleDirections[0][0], $possibleDirections[0][1]]);
+        $queue[] = ([$dist + 1, [$sx, $sy], $possibleDirections[0][0], $possibleDirections[0][1]]);
     }
 }
 
-$queue = new SplPriorityQueue();
-$queue->insert([0, $start, []], 0);
+$queue = [[0, $start, []]];
 $maxDist = 0;
-while (!$queue->isEmpty()) {
-    [$dist, [$x, $y], $visited] = $queue->extract();
+while (!empty($queue)) {
+    [$dist, [$x, $y], $visited] = array_pop($queue);
     $visited[$x][$y] = 1;
     if ($x === $end[0] && $y === $end[1]) {
         $maxDist = max($maxDist, $dist);
@@ -50,7 +48,7 @@ while (!$queue->isEmpty()) {
     foreach ($nodes["$x:$y"] as $childCoords => $childDist) {
         [$newX, $newY] = explode(':', $childCoords);
         if (!isset($visited[$newX][$newY])) {
-            $queue->insert([$dist + $childDist, [(int) $newX, (int) $newY], $visited], $dist + $childDist);
+            $queue[] = [$dist + $childDist, [(int) $newX, (int) $newY], $visited];
         }
     }
 }
