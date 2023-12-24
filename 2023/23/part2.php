@@ -10,9 +10,10 @@ $nodes = [];
 $queue = [[0, $start, $start, $directions[3], $directions[3]]];
 while (!empty($queue)) {
     [$dist, [$sx, $sy], [$x, $y], [$dx, $dy]] = array_pop($queue);
-    if (($x === $end[0] && $y === $end[1]) || isset($nodes["$x:$y"])) {
-        $nodes["$sx:$sy"]["$x:$y"] = $dist;
-        $nodes["$x:$y"]["$sx:$sy"] = $dist;
+    [$startKey, $currentKey] = [$sx * 1000 + $sy, $x * 1000 + $y];
+    if (($x === $end[0] && $y === $end[1]) || isset($nodes[$currentKey])) {
+        $nodes[$startKey][$currentKey] = $dist;
+        $nodes[$currentKey][$startKey] = $dist;
         continue;
     }
     $possibleDirections = [];
@@ -26,8 +27,8 @@ while (!empty($queue)) {
         }
     }
     if (count($possibleDirections) > 1) {
-        $nodes["$sx:$sy"]["$x:$y"] = $dist;
-        $nodes["$x:$y"]["$sx:$sy"] = $dist;
+        $nodes[$startKey][$currentKey] = $dist;
+        $nodes[$currentKey][$startKey] = $dist;
         foreach ($possibleDirections as $possibleDirection) {
             $queue[] = ([1, [$x, $y], $possibleDirection[0], $possibleDirection[1]]);
         }
@@ -45,10 +46,11 @@ while (!empty($queue)) {
         $maxDist = max($maxDist, $dist);
         continue;
     }
-    foreach ($nodes["$x:$y"] as $childCoords => $childDist) {
-        [$newX, $newY] = explode(':', $childCoords);
+    foreach ($nodes[$x * 1000 + $y] as $childCoords => $childDist) {
+        $newX = (int) ($childCoords / 1000);
+        $newY = $childCoords - $newX * 1000;
         if (!isset($visited[$newX][$newY])) {
-            $queue[] = [$dist + $childDist, [(int) $newX, (int) $newY], $visited];
+            $queue[] = [$dist + $childDist, [$newX, $newY], $visited];
         }
     }
 }
